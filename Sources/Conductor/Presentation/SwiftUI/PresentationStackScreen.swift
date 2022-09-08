@@ -17,7 +17,7 @@ public struct PresentationStackScreen<Content: View>: View {
     public init<Value, Output>(
         _ type: Value.Type,
         @ViewBuilder content: @escaping (Value, @escaping (Output) -> Void) -> Content
-    ) {
+    ) where Value : PresentationOutput, Output == Value.Output {
         self.type = toTypeIdentifier(type)
         self.content = { (value, callback) in content(value as! Value, { output in callback?(output) }) }
     }
