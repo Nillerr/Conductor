@@ -1,6 +1,8 @@
 import Combine
 import Foundation
 
+public typealias NavigationPath = EntryPath<NavigationEntry>
+
 public class NavigationRouter: ObservableObject {
     public struct Configuration {
         public var operationDelay: DispatchTimeInterval = .milliseconds(650)
@@ -17,7 +19,7 @@ public class NavigationRouter: ObservableObject {
     private var workQueue: [DispatchWorkItem] = []
     
     public init(
-        idGenerator: IdGenerator = IncrementingNavigationIdGenerator(),
+        idGenerator: IdGenerator = IncrementingIdGenerator(),
         configuration: Configuration = Configuration()
     ) {
         self.idGenerator = idGenerator

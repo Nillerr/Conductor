@@ -1,62 +1,7 @@
-import SwiftUI
 import Combine
+import Foundation
 
-public enum PresentationStyle {
-    case fullScreenCover
-    case sheet
-}
-
-public struct PresentationEntry: NavigableEntry {
-    public let id: String
-    public let type: String
-    public let value: AnyHashable
-    public let style: PresentationStyle
-}
-
-public enum PresentationStep {
-    case dismiss
-    case present(PresentationEntry)
-    case goToFirst(PresentationEntry)
-    case goToLast(PresentationEntry)
-    case invoke(() -> Void)
-}
-
-public struct PresentationBuilder {
-    private let idGenerator: IdGenerator
-    
-    private(set) var steps: [PresentationStep] = []
-    
-    public init(idGenerator: IdGenerator) {
-        self.idGenerator = idGenerator
-    }
-    
-    public mutating func present<Value>(_ value: Value, style: PresentationStyle) where Value : Hashable {
-        steps.append(.present(entry(value, style: style)))
-    }
-    
-    public mutating func dismiss() {
-        steps.append(.dismiss)
-    }
-    
-    public mutating func goToFirst<Value>(_ value: Value, style: PresentationStyle) where Value : Hashable {
-        steps.append(.goToFirst(entry(value, style: style)))
-    }
-    
-    public mutating func goToLast<Value>(_ value: Value, style: PresentationStyle) where Value : Hashable {
-        steps.append(.goToLast(entry(value, style: style)))
-    }
-    
-    public mutating func invoke(_ block: @escaping () -> Void) {
-        steps.append(.invoke(block))
-    }
-    
-    private func entry<Value>(_ value: Value, style: PresentationStyle) -> PresentationEntry where Value : Hashable {
-        let id = idGenerator.nextId()
-        let type = String(describing: Value.self)
-        let value = AnyHashable(value)
-        return PresentationEntry(id: id, type: type, value: value, style: style)
-    }
-}
+public typealias PresentationPath = EntryPath<PresentationEntry>
 
 public class PresentationRouter: ObservableObject {
     public struct Configuration {
@@ -74,7 +19,7 @@ public class PresentationRouter: ObservableObject {
     private var workQueue: [DispatchWorkItem] = []
     
     public init(
-        idGenerator: IdGenerator = IncrementingNavigationIdGenerator(),
+        idGenerator: IdGenerator = IncrementingIdGenerator(),
         configuration: Configuration = Configuration()
     ) {
         self.idGenerator = idGenerator

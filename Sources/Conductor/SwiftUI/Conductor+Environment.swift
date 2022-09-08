@@ -10,7 +10,7 @@ struct NavigationEntryEnvironmentKey: EnvironmentKey {
 
 struct NavigationRouterEnvironmentKey: EnvironmentKey {
     static var defaultValue = NavigationRouter(
-        idGenerator: IncrementingNavigationIdGenerator(),
+        idGenerator: IncrementingIdGenerator(),
         configuration: .init()
     )
 }
@@ -26,7 +26,7 @@ struct PresentationEntryEnvironmentKey: EnvironmentKey {
 
 struct PresentationRouterEnvironmentKey: EnvironmentKey {
     static var defaultValue = PresentationRouter(
-        idGenerator: IncrementingNavigationIdGenerator(),
+        idGenerator: IncrementingIdGenerator(),
         configuration: .init()
     )
 }

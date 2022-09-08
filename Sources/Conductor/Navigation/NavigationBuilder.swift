@@ -20,12 +20,12 @@ public struct NavigationBuilder {
     }
     
     public mutating func popToFirst<Value>(_ type: Value.Type) where Value : Hashable {
-        let type = String(describing: Value.self)
+        let type = toTypeIdentifier(type)
         steps.append(.popToFirst(type))
     }
     
     public mutating func popToLast<Value>(_ type: Value.Type) where Value : Hashable {
-        let type = String(describing: Value.self)
+        let type = toTypeIdentifier(type)
         steps.append(.popToLast(type))
     }
     
@@ -43,7 +43,7 @@ public struct NavigationBuilder {
     
     private func entry<Value>(_ value: Value) -> NavigationEntry where Value : Hashable {
         let id = idGenerator.nextId()
-        let type = String(describing: Value.self)
+        let type = toTypeIdentifier(Value.self)
         let value = AnyHashable(value)
         return NavigationEntry(id: id, type: type, value: value)
     }

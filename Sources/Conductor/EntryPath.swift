@@ -1,17 +1,3 @@
-public typealias NavigationPath = EntryPath<NavigationEntry>
-public typealias PresentationPath = EntryPath<PresentationEntry>
-
-public protocol NavigableEntry: CustomStringConvertible {
-    var id: String { get }
-    var type: String { get }
-}
-
-extension NavigableEntry {
-    public var description: String {
-        return "\(type)<\(id)>"
-    }
-}
-
 public struct EntryPath<Entry>: CustomStringConvertible, Sequence where Entry : NavigableEntry {
     public typealias Element = Entry
     public typealias Iterator = Array<Entry>.Iterator
