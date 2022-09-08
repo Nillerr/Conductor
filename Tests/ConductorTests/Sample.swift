@@ -1,3 +1,4 @@
+@testable import Conductor
 import SwiftUI
 
 @available(iOS 14, *)
