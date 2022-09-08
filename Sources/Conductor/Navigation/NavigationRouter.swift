@@ -26,12 +26,22 @@ public class NavigationRouter: ObservableObject {
         self.configuration = configuration
     }
     
-    public func navigate(_ builder: (inout NavigationBuilder) -> Void) {
+    public func navigate(_ builder: @escaping (inout NavigationBuilder) -> Void) {
+        let work = DispatchWorkItem { [weak self] in self?.performNavigate(builder) }
+        enqueueWork([work])
+    }
+    
+    private func performNavigate(_ builder: @escaping (inout NavigationBuilder) -> Void) {
         var navBuilder = NavigationBuilder(idGenerator: idGenerator)
         builder(&navBuilder)
         
+        let work = navBuilder.steps.map(createWork(for:))
+        enqueueWork(work)
+    }
+    
+    private func enqueueWork(_ work: [DispatchWorkItem]) {
         let currentWork = workQueue
-        workQueue.append(contentsOf: navBuilder.steps.map(createWork(for:)))
+        workQueue.append(contentsOf: work)
         
         if currentWork.isEmpty {
             performNextWork()

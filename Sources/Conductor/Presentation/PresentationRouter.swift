@@ -26,12 +26,22 @@ public class PresentationRouter: ObservableObject {
         self.configuration = configuration
     }
     
-    public func navigate(_ builder: (inout PresentationBuilder) -> Void) {
+    public func navigate(_ builder: @escaping (inout PresentationBuilder) -> Void) {
+        let work = DispatchWorkItem { [weak self] in self?.performNavigate(builder) }
+        enqueueWork([work])
+    }
+    
+    private func performNavigate(_ builder: @escaping (inout PresentationBuilder) -> Void) {
         var navBuilder = PresentationBuilder(idGenerator: idGenerator)
         builder(&navBuilder)
         
+        let work = navBuilder.steps.map(createWork(for:))
+        enqueueWork(work)
+    }
+    
+    private func enqueueWork(_ work: [DispatchWorkItem]) {
         let currentWork = workQueue
-        workQueue.append(contentsOf: navBuilder.steps.map(createWork(for:)))
+        workQueue.append(contentsOf: work)
         
         if currentWork.isEmpty {
             performNextWork()
@@ -57,10 +67,6 @@ public class PresentationRouter: ObservableObject {
             return DispatchWorkItem { [weak self] in self?.dismiss() }
         case .present(let entry):
             return DispatchWorkItem { [weak self] in self?.present(entry) }
-        case .goToFirst(let entry):
-            return DispatchWorkItem { [weak self] in self?.goToFirst(entry) }
-        case .goToLast(let entry):
-            return DispatchWorkItem { [weak self] in self?.goToLast(entry) }
         case .invoke(let block):
             return DispatchWorkItem(block: block)
         }
@@ -74,23 +80,5 @@ public class PresentationRouter: ObservableObject {
     private func present(_ entry: PresentationEntry) {
         Logging.log(.stack, "<PresentationRouter> {PRESENT}", "\tentry: \(entry)")
         path.append(entry)
-    }
-    
-    private func goToFirst(_ entry: PresentationEntry) {
-        Logging.log(.stack, "<PresentationRouter> {GO_TO_FIRST}", "\tentry: \(entry)")
-        if let index = path.firstIndex(type: entry.type) {
-            path = PresentationPath(path.entries[0..<index] + [entry])
-        } else {
-            path.append(entry)
-        }
-    }
-    
-    private func goToLast(_ entry: PresentationEntry) {
-        Logging.log(.stack, "<PresentationRouter> {GO_TO_LAST}", "\tentry: \(entry)")
-        if let index = path.lastIndex(type: entry.type) {
-            path = PresentationPath(path.entries[0..<index] + [entry])
-        } else {
-            path.append(entry)
-        }
     }
 }
