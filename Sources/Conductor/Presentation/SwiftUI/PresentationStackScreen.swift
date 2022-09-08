@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct PresentrationStackScreen<Content: View>: View {
+public struct PresentationStackScreen<Content: View>: View {
     @Environment(\.presentationEntry) public var entry: PresentationEntry
     
     public let id: String
