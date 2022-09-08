@@ -19,7 +19,11 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
         }
     }
     
-    public init(router: NavigationRouter, @ViewBuilder root: () -> Root, @ViewBuilder routes: () -> Routes) {
+    public init(
+        router: NavigationRouter = NavigationRouter(),
+        @ViewBuilder root: () -> Root,
+        @ViewBuilder routes: () -> Routes
+    ) {
         self.router = router
         self.root = root()
         self.routes = routes()
@@ -34,6 +38,7 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
     public var body: some View {
         VStack {
             root
+                .environment(\.navigationRouter, router)
             
             Link(router: router, isActive: isLinkActive, routes: routes, path: router.path)
         }
