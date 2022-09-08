@@ -1,7 +1,33 @@
 import SwiftUI
+import Combine
+
+internal class ObservableObjectHolder<Object : ObservableObject>: ObservableObject {
+    private var subscription: AnyCancellable?
+    
+    var object: Object? {
+        didSet {
+            subscription = object?.objectWillChange
+                .sink(receiveValue: { [weak self] _ in self?.objectWillChange.send() })
+        }
+    }
+    
+    init() {
+        self.object = nil
+    }
+    
+    init(object: Object) {
+        self.object = object
+    }
+}
 
 public struct NavigationStackContent<Root: View, Routes: View>: View {
-    @ObservedObject public private(set) var router: NavigationRouter
+    @StateObject private var defaultRouter = NavigationRouter()
+    
+    @ObservedObject private var routerHolder: ObservableObjectHolder<NavigationRouter>
+    
+    public var router: NavigationRouter {
+        routerHolder.object ?? defaultRouter
+    }
     
     public let root: Root
     public let routes: Routes
@@ -20,17 +46,32 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
     }
     
     public init(
-        router: NavigationRouter = NavigationRouter(),
+        router: NavigationRouter,
         @ViewBuilder root: () -> Root,
         @ViewBuilder routes: () -> Routes
     ) {
-        self.router = router
+        self.routerHolder = ObservableObjectHolder(object: router)
+        self.root = root()
+        self.routes = routes()
+    }
+    
+    public init(
+        @ViewBuilder root: () -> Root,
+        @ViewBuilder routes: () -> Routes
+    ) {
+        self.routerHolder = ObservableObjectHolder()
         self.root = root()
         self.routes = routes()
     }
     
     internal init(router: NavigationRouter, root: Root, routes: Routes) {
-        self.router = router
+        self.routerHolder = ObservableObjectHolder(object: router)
+        self.root = root
+        self.routes = routes
+    }
+    
+    internal init(root: Root, routes: Routes) {
+        self.routerHolder = ObservableObjectHolder()
         self.root = root
         self.routes = routes
     }
