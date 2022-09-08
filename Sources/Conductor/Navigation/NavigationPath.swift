@@ -13,9 +13,11 @@ extension NavigableEntry {
 }
 
 public struct EntryPath<Entry>: CustomStringConvertible where Entry : NavigableEntry {
-    var entries: [Entry]
+    internal var entries: [Entry]
     
-    var isEmpty: Bool { entries.isEmpty }
+    public var isEmpty: Bool { entries.isEmpty }
+    
+    public var count: Int { entries.count }
     
     public var description: String {
         let str = entries.map { $0.description }.joined(separator: " -> ")
