@@ -104,12 +104,10 @@ public struct PresentationStack<Root: View, Routes: View>: View {
             Binding {
                 presentationStyle == .sheet
             } set: { newValue in
-                print("[Sheet] isSheetActive: \(newValue), presentationStyle: \(presentationStyle)")
+                print("[Sheet] newValue: \(newValue), isSheetActive: \(newValue), presentationStyle: \(presentationStyle)")
                 
                 if !newValue && presentationStyle == .sheet {
-                    DispatchQueue.main.async {
-                        presentationStyle = nil
-                    }
+                    presentationStyle = nil
                 }
             }
         }
