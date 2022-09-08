@@ -1,3 +1,7 @@
+public protocol PresentationOutput {
+    associatedtype Output
+}
+
 public struct PresentationBuilder {
     private let idGenerator: IdGenerator
     
@@ -14,7 +18,7 @@ public struct PresentationBuilder {
         steps.append(.present(entry))
     }
     
-    public mutating func present<Value, Output>(_ value: Value, style: PresentationStyle = .fullScreenCover, callback: @escaping (Output) -> Void) {
+    public mutating func present<Value, Output>(_ value: Value, style: PresentationStyle = .fullScreenCover, callback: @escaping (Output) -> Void) where Value : PresentationOutput {
         let id = idGenerator.nextId()
         let type = toTypeIdentifier(Value.self)
         let entry = PresentationEntry(id: id, type: type, value: value, style: style, callback: { callback($0 as! Output) })
