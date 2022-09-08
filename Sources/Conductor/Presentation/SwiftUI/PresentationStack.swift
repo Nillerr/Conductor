@@ -102,9 +102,9 @@ public struct PresentationStack<Root: View, Routes: View>: View {
         
         private var isSheetActive: Binding<Bool> {
             Binding {
-                presentationStyle == .fullScreenCover
+                presentationStyle == .sheet
             } set: { newValue in
-                if !newValue && presentationStyle == .fullScreenCover {
+                if !newValue && presentationStyle == .sheet {
                     presentationStyle = nil
                 }
             }
