@@ -122,12 +122,12 @@ public struct PresentationStack<Root: View, Routes: View>: View {
         
         public var body: some View {
             VStack {}
-                .fullScreenCover(isPresented: isFullScreenCoverActive, onDismiss: { print("[FullScreenCover] onDismiss") }) {
+                .fullScreenCover(isPresented: isFullScreenCoverActive, onDismiss: { isFullScreenCoverActive = false }) {
                     content()
                 }
             
             VStack {}
-                .sheet(isPresented: isSheetActive, onDismiss: { print("[Sheet] onDismiss") }) {
+                .sheet(isPresented: isSheetActive, onDismiss: { isSheetActive = false }) {
                     content()
                 }
         }
