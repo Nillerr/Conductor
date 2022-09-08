@@ -4,27 +4,19 @@ public struct PresentationStackScreen<Content: View>: View {
     @Environment(\.presentationEntry) public var entry: PresentationEntry
     
     public let type: TypeId
-    public let content: (Any, ((Any) -> Void)?) -> Content
+    public let content: (Any) -> Content
     
     public init<Value>(
         _ type: Value.Type,
         @ViewBuilder content: @escaping (Value) -> Content
     ) {
         self.type = toTypeIdentifier(type)
-        self.content = { (value, callback) in content(value as! Value) }
-    }
-    
-    public init<Value, Output>(
-        _ type: Value.Type,
-        @ViewBuilder content: @escaping (Value, @escaping (Output) -> Void) -> Content
-    ) where Value : PresentationOutput, Output == Value.Output {
-        self.type = toTypeIdentifier(type)
-        self.content = { (value, callback) in content(value as! Value, { output in callback?(output) }) }
+        self.content = { value in content(value as! Value) }
     }
     
     public var body: some View {
         if entry.type == type {
-            content(entry.value, entry.callback)
+            content(entry.value)
         } else {
             EmptyView()
         }
