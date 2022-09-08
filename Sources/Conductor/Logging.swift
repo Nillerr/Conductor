@@ -1,11 +1,14 @@
 public enum Logging {
     public enum Category: CustomStringConvertible {
         case stack
+        case modal
         
         public var description: String {
             switch self {
             case .stack:
-                return "NavigationStack"
+                return "Stack"
+            case .modal:
+                return "Modal"
             }
         }
     }
@@ -19,7 +22,7 @@ public enum Logging {
     public static func log(_ category: Category, _ messages: String...) {
         if isEnabled(category) {
             for message in messages {
-                print("[\(category)] \(message)")
+                print("[Conductor] \(category): \(message)")
             }
         }
     }

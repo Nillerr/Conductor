@@ -65,6 +65,8 @@ public class NavigationRouter: ObservableObject {
             return DispatchWorkItem { [weak self] in self?.goToFirst(entry) }
         case .goToLast(let entry):
             return DispatchWorkItem { [weak self] in self?.goToLast(entry) }
+        case .invoke(let block):
+            return DispatchWorkItem(block: block)
         }
     }
     

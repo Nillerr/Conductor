@@ -37,6 +37,10 @@ public struct NavigationBuilder {
         steps.append(.goToLast(entry(value)))
     }
     
+    public mutating func invoke(_ block: @escaping () -> Void) {
+        steps.append(.invoke(block))
+    }
+    
     private func entry<Value>(_ value: Value) -> NavigationEntry where Value : Hashable {
         let id = idGenerator.nextId()
         let type = String(describing: Value.self)

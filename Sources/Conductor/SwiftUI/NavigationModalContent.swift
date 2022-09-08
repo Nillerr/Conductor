@@ -1,6 +1,7 @@
 import SwiftUI
 
-public struct NavigationStackContent<Root: View, Routes: View>: View {
+@available(iOS 14, *)
+public struct NavigationModalContent<Root: View, Routes: View>: View {
     @StateObject private var defaultRouter = NavigationRouter()
     
     @ObservedObject private var routerHolder: ObservableObjectHolder<NavigationRouter>
@@ -19,7 +20,7 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
             let routerPath = router.path
             if let child = router.path.entries.last, !newValue {
                 if let popped = router.path.popLast(id: child.id) {
-                    Logging.log(.stack, "<Content> {POP}", "\trouter: \(routerPath)", "\tpopped: \(popped)")
+                    Logging.log(.modal, "<Content> {POP}", "\trouter: \(routerPath)", "\tpopped: \(popped)")
                 }
             }
         }
@@ -75,15 +76,32 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
         public let path: NavigationPath
         
         public var body: some View {
-            NavigationLink(isActive: $isActive) {
+            PresentationLink(isActive: $isActive) {
                 var descendants = path
                 if let entry = descendants.popFirst() {
                     Entry(router: router, routes: routes, entry: entry, path: descendants)
                 } else {
                     Text("Unexpected state: No descendants of navigation")
                 }
-            } label: { EmptyView() }
-                .isDetailLink(false)
+            }
+        }
+    }
+    
+    public struct PresentationLink<Content: View>: View {
+        @Binding public private(set) var isActive: Bool
+        
+        public let content: () -> Content
+        
+        public init(isActive: Binding<Bool>, @ViewBuilder content: @escaping () -> Content) {
+            self._isActive = isActive
+            self.content = content
+        }
+        
+        public var body: some View {
+            VStack {}
+                .fullScreenCover(isPresented: $isActive, onDismiss: nil) {
+                    content()
+                }
         }
     }
     
@@ -102,7 +120,7 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
             } set: { newValue in
                 let routerPath = router.path
                 if let child = path.entries.first, !newValue, let popped = router.path.popLast(id: child.id) {
-                    Logging.log(.stack, "<Entry> {POP}", "\tentry: \(entry)", "\trouter: \(routerPath)", "\tpath: \(path)", "\tpopped: \(popped)")
+                    Logging.log(.modal, "<Entry> {POP}", "\tentry: \(entry)", "\trouter: \(routerPath)", "\tpath: \(path)", "\tpopped: \(popped)")
                 }
             }
         }

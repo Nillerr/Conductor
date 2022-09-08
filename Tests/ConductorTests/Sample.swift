@@ -115,6 +115,7 @@ struct HomeView: View {
                     it.push(LoginScreen())
                     it.push(HomeScreen(session: "sess-4"))
                     it.popToLast(LoginScreen.self)
+                    it.invoke { print("[Conductor] Done") }
                 }
             }
             .padding()

@@ -6,4 +6,5 @@ enum NavigationStep {
     case push(NavigationEntry)
     case goToFirst(NavigationEntry)
     case goToLast(NavigationEntry)
+    case invoke(() -> Void)
 }
