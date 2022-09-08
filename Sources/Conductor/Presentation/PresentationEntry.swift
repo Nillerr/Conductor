@@ -8,5 +8,4 @@ public struct PresentationEntry: NavigableEntry {
     public let type: TypeId
     public let value: Any
     public let style: PresentationStyle
-    public let callback: ((Any) -> Void)?
 }

@@ -10,7 +10,7 @@ public struct PresentationBuilder {
     public mutating func present<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) {
         let id = idGenerator.nextId()
         let type = toTypeIdentifier(Value.self)
-        let entry = PresentationEntry(id: id, type: type, value: value, style: style, callback: nil)
+        let entry = PresentationEntry(id: id, type: type, value: value, style: style)
         steps.append(.present(entry))
     }
     
