@@ -4,7 +4,7 @@ public struct NavigationStackScreen<Content: View>: View {
     @Environment(\.navigationEntry) public var entry: NavigationEntry
     
     public let type: TypeId
-    public let content: (AnyHashable) -> Content
+    public let content: (Any) -> Content
     
     public init<Value>(_ type: Value.Type, @ViewBuilder content: @escaping (Value) -> Content) {
         self.type = toTypeIdentifier(type)

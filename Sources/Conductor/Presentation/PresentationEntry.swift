@@ -6,6 +6,6 @@ public enum PresentationStyle: Equatable {
 public struct PresentationEntry: NavigableEntry {
     public let id: String
     public let type: TypeId
-    public let value: AnyHashable
+    public let value: Any
     public let style: PresentationStyle
 }

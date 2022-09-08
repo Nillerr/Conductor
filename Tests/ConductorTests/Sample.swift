@@ -31,9 +31,9 @@ struct Sample: View {
     }
 }
 
-struct LoginScreen: Hashable {}
+struct LoginScreen {}
 
-struct HomeScreen: Hashable {
+struct HomeScreen {
     let session: String
 }
 

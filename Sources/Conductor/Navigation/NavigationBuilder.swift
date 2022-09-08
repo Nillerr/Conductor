@@ -7,7 +7,7 @@ public struct NavigationBuilder {
         self.idGenerator = idGenerator
     }
     
-    public mutating func push<Value>(_ value: Value) where Value : Hashable {
+    public mutating func push<Value>(_ value: Value) {
         steps.append(.push(entry(value)))
     }
     
@@ -19,21 +19,21 @@ public struct NavigationBuilder {
         steps.append(.popToRoot)
     }
     
-    public mutating func popToFirst<Value>(_ type: Value.Type) where Value : Hashable {
+    public mutating func popToFirst<Value>(_ type: Value.Type) {
         let type = toTypeIdentifier(type)
         steps.append(.popToFirst(type))
     }
     
-    public mutating func popToLast<Value>(_ type: Value.Type) where Value : Hashable {
+    public mutating func popToLast<Value>(_ type: Value.Type) {
         let type = toTypeIdentifier(type)
         steps.append(.popToLast(type))
     }
     
-    public mutating func goToFirst<Value>(_ value: Value) where Value : Hashable {
+    public mutating func goToFirst<Value>(_ value: Value) {
         steps.append(.goToFirst(entry(value)))
     }
     
-    public mutating func goToLast<Value>(_ value: Value) where Value : Hashable {
+    public mutating func goToLast<Value>(_ value: Value) {
         steps.append(.goToLast(entry(value)))
     }
     
@@ -41,10 +41,9 @@ public struct NavigationBuilder {
         steps.append(.invoke(block))
     }
     
-    private func entry<Value>(_ value: Value) -> NavigationEntry where Value : Hashable {
+    private func entry<Value>(_ value: Value) -> NavigationEntry {
         let id = idGenerator.nextId()
         let type = toTypeIdentifier(Value.self)
-        let value = AnyHashable(value)
         return NavigationEntry(id: id, type: type, value: value)
     }
 }

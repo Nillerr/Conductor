@@ -7,7 +7,7 @@ public struct PresentationBuilder {
         self.idGenerator = idGenerator
     }
     
-    public mutating func present<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) where Value : Hashable {
+    public mutating func present<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) {
         steps.append(.present(entry(value, style: style)))
     }
     
@@ -19,10 +19,9 @@ public struct PresentationBuilder {
         steps.append(.invoke(block))
     }
     
-    private func entry<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) -> PresentationEntry where Value : Hashable {
+    private func entry<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) -> PresentationEntry {
         let id = idGenerator.nextId()
         let type = toTypeIdentifier(Value.self)
-        let value = AnyHashable(value)
         return PresentationEntry(id: id, type: type, value: value, style: style)
     }
 }

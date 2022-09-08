@@ -4,7 +4,7 @@ struct NavigationEntryEnvironmentKey: EnvironmentKey {
     static var defaultValue = NavigationEntry(
         id: "?",
         type: "DefaultValue",
-        value: AnyHashable("default")
+        value: "default"
     )
 }
 
@@ -19,7 +19,7 @@ struct PresentationEntryEnvironmentKey: EnvironmentKey {
     static var defaultValue = PresentationEntry(
         id: "?",
         type: "DefaultValue",
-        value: AnyHashable("default"),
+        value: "default",
         style: .fullScreenCover
     )
 }
