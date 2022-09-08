@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 14, *)
 struct Sample: View {
     @StateObject var router = NavigationRouter()
     
@@ -35,6 +36,7 @@ struct HomeScreen: Hashable {
     let session: String
 }
 
+@available(iOS 14, *)
 struct LoginView: View {
     @Environment(\.navigationRouter) var router: NavigationRouter
     
@@ -61,6 +63,7 @@ struct LoginView: View {
     }
 }
 
+@available(iOS 14, *)
 struct HomeView: View {
     @Environment(\.navigationRouter) var router: NavigationRouter
     
