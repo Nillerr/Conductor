@@ -16,7 +16,7 @@ public class NavigationRouter: ObservableObject {
     
     @Published public internal(set) var path = NavigationPath()
     
-    private var workQueue: [DispatchWorkItem] = []
+    private var workQueue: [WorkHandle] = []
     
     public init(
         idGenerator: IdGenerator = IncrementingIdGenerator(),
@@ -27,7 +27,7 @@ public class NavigationRouter: ObservableObject {
     }
     
     public func navigate(_ builder: @escaping (inout NavigationBuilder) -> Void) {
-        let work = DispatchWorkItem { [weak self] in self?.performNavigate(builder) }
+        let work = WorkHandle(immediate: true) { [weak self] in self?.performNavigate(builder) }
         enqueueWork([work])
     }
     
@@ -39,7 +39,7 @@ public class NavigationRouter: ObservableObject {
         enqueueWork(work)
     }
     
-    private func enqueueWork(_ work: [DispatchWorkItem]) {
+    private func enqueueWork(_ work: [WorkHandle]) {
         let currentWork = workQueue
         workQueue.append(contentsOf: work)
         
@@ -51,34 +51,34 @@ public class NavigationRouter: ObservableObject {
     }
     
     private func performNextWork() {
-        guard let work = workQueue.first else { return }
+        guard let workHandle = workQueue.first else { return }
+        workHandle.work.perform()
         
-        work.perform()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + configuration.operationDelay) { [weak self] in
+        let delay = workHandle.immediate ? .milliseconds(0) : configuration.operationDelay
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.workQueue.removeFirst()
             self?.performNextWork()
         }
     }
     
-    private func createWork(for step: NavigationStep) -> DispatchWorkItem {
+    private func createWork(for step: NavigationStep) -> WorkHandle {
         switch step {
         case .popToRoot:
-            return DispatchWorkItem { [weak self] in self?.popToRoot() }
+            return WorkHandle { [weak self] in self?.popToRoot() }
         case .pop(let count):
-            return DispatchWorkItem { [weak self] in self?.pop(count) }
+            return WorkHandle { [weak self] in self?.pop(count) }
         case .popToFirst(let type):
-            return DispatchWorkItem { [weak self] in self?.popToFirst(type) }
+            return WorkHandle { [weak self] in self?.popToFirst(type) }
         case .popToLast(let type):
-            return DispatchWorkItem { [weak self] in self?.popToLast(type) }
+            return WorkHandle { [weak self] in self?.popToLast(type) }
         case .push(let entry):
-            return DispatchWorkItem { [weak self] in self?.push(entry) }
+            return WorkHandle { [weak self] in self?.push(entry) }
         case .goToFirst(let entry):
-            return DispatchWorkItem { [weak self] in self?.goToFirst(entry) }
+            return WorkHandle { [weak self] in self?.goToFirst(entry) }
         case .goToLast(let entry):
-            return DispatchWorkItem { [weak self] in self?.goToLast(entry) }
+            return WorkHandle { [weak self] in self?.goToLast(entry) }
         case .invoke(let block):
-            return DispatchWorkItem(block: block)
+            return WorkHandle(block: block)
         }
     }
     

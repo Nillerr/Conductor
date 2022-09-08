@@ -3,16 +3,6 @@ import Foundation
 
 public typealias PresentationPath = EntryPath<PresentationEntry>
 
-public struct WorkHandle {
-    public let work: DispatchWorkItem
-    public let immediate: Bool
-    
-    public init(immediate: Bool = false, block: @escaping () -> Void) {
-        self.work = DispatchWorkItem(block: block)
-        self.immediate = immediate
-    }
-}
-
 public class PresentationRouter: ObservableObject {
     public struct Configuration {
         public var operationDelay: DispatchTimeInterval = .milliseconds(650)
@@ -62,10 +52,9 @@ public class PresentationRouter: ObservableObject {
     
     private func performNextWork() {
         guard let workHandle = workQueue.first else { return }
-        
         workHandle.work.perform()
         
-        let delay: DispatchTimeInterval = workHandle.immediate ? .milliseconds(0) : configuration.operationDelay
+        let delay = workHandle.immediate ? .milliseconds(0) : configuration.operationDelay
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.workQueue.removeFirst()
             self?.performNextWork()
