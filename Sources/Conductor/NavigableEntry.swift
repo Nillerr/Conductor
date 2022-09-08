@@ -1,6 +1,6 @@
 public protocol NavigableEntry: CustomStringConvertible {
     var id: String { get }
-    var type: String { get }
+    var type: TypeId { get }
 }
 
 extension NavigableEntry {

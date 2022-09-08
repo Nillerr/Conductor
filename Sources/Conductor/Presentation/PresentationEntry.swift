@@ -5,7 +5,7 @@ public enum PresentationStyle {
 
 public struct PresentationEntry: NavigableEntry {
     public let id: String
-    public let type: String
+    public let type: TypeId
     public let value: AnyHashable
     public let style: PresentationStyle
 }
