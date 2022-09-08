@@ -107,7 +107,9 @@ public struct PresentationStack<Root: View, Routes: View>: View {
                 print("[Sheet] isSheetActive: \(newValue), presentationStyle: \(presentationStyle)")
                 
                 if !newValue && presentationStyle == .sheet {
-                    presentationStyle = nil
+                    DispatchQueue.main.async {
+                        presentationStyle = nil
+                    }
                 }
             }
         }
