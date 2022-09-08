@@ -12,7 +12,10 @@ extension NavigableEntry {
     }
 }
 
-public struct EntryPath<Entry>: CustomStringConvertible where Entry : NavigableEntry {
+public struct EntryPath<Entry>: CustomStringConvertible, Sequence where Entry : NavigableEntry {
+    public typealias Element = Entry
+    public typealias Iterator = Array<Entry>.Iterator
+    
     internal var entries: [Entry]
     
     public var isEmpty: Bool { entries.isEmpty }
@@ -75,5 +78,9 @@ public struct EntryPath<Entry>: CustomStringConvertible where Entry : NavigableE
     
     mutating func clear() {
         entries.removeAll()
+    }
+    
+    public func makeIterator() -> Array<Entry>.Iterator {
+        return entries.makeIterator()
     }
 }
