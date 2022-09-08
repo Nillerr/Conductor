@@ -3,6 +3,16 @@ import Foundation
 
 public typealias PresentationPath = EntryPath<PresentationEntry>
 
+public struct WorkHandle {
+    public let work: DispatchWorkItem
+    public let immediate: Bool
+    
+    public init(immediate: Bool = false, block: @escaping () -> Void) {
+        self.work = DispatchWorkItem(block: block)
+        self.immediate = immediate
+    }
+}
+
 public class PresentationRouter: ObservableObject {
     public struct Configuration {
         public var operationDelay: DispatchTimeInterval = .milliseconds(650)
@@ -16,7 +26,7 @@ public class PresentationRouter: ObservableObject {
     
     @Published public internal(set) var path = PresentationPath()
     
-    private var workQueue: [DispatchWorkItem] = []
+    private var workQueue: [WorkHandle] = []
     
     public init(
         idGenerator: IdGenerator = IncrementingIdGenerator(),
@@ -27,7 +37,7 @@ public class PresentationRouter: ObservableObject {
     }
     
     public func navigate(_ builder: @escaping (inout PresentationBuilder) -> Void) {
-        let work = DispatchWorkItem { [weak self] in self?.performNavigate(builder) }
+        let work = WorkHandle(immediate: true) { [weak self] in self?.performNavigate(builder) }
         enqueueWork([work])
     }
     
@@ -39,7 +49,7 @@ public class PresentationRouter: ObservableObject {
         enqueueWork(work)
     }
     
-    private func enqueueWork(_ work: [DispatchWorkItem]) {
+    private func enqueueWork(_ work: [WorkHandle]) {
         let currentWork = workQueue
         workQueue.append(contentsOf: work)
         
@@ -51,24 +61,25 @@ public class PresentationRouter: ObservableObject {
     }
     
     private func performNextWork() {
-        guard let work = workQueue.first else { return }
+        guard let workHandle = workQueue.first else { return }
         
-        work.perform()
+        workHandle.work.perform()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + configuration.operationDelay) { [weak self] in
+        let delay: DispatchTimeInterval = workHandle.immediate ? .milliseconds(0) : configuration.operationDelay
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.workQueue.removeFirst()
             self?.performNextWork()
         }
     }
     
-    private func createWork(for step: PresentationStep) -> DispatchWorkItem {
+    private func createWork(for step: PresentationStep) -> WorkHandle {
         switch step {
         case .dismiss:
-            return DispatchWorkItem { [weak self] in self?.dismiss() }
+            return WorkHandle { [weak self] in self?.dismiss() }
         case .present(let entry):
-            return DispatchWorkItem { [weak self] in self?.present(entry) }
+            return WorkHandle { [weak self] in self?.present(entry) }
         case .invoke(let block):
-            return DispatchWorkItem(block: block)
+            return WorkHandle(block: block)
         }
     }
     
