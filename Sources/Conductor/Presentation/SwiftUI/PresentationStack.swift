@@ -104,8 +104,6 @@ public struct PresentationStack<Root: View, Routes: View>: View {
             Binding {
                 presentationStyle == .sheet
             } set: { newValue in
-                print("[Sheet] newValue: \(newValue), isSheetActive: \(newValue), presentationStyle: \(presentationStyle)")
-                
                 if !newValue && presentationStyle == .sheet {
                     presentationStyle = nil
                 }
@@ -124,18 +122,12 @@ public struct PresentationStack<Root: View, Routes: View>: View {
         
         public var body: some View {
             VStack {}
-                .fullScreenCover(isPresented: isFullScreenCoverActive) {
-                    print("[FullScreenCover] onDismiss")
-                    isFullScreenCoverActive.wrappedValue = false
-                } content: {
+                .fullScreenCover(isPresented: isFullScreenCoverActive, onDismiss: nil) {
                     content()
                 }
             
             VStack {}
-                .sheet(isPresented: isSheetActive) {
-                    print("[Sheet] onDismiss")
-                    isSheetActive.wrappedValue = false
-                } content: {
+                .sheet(isPresented: isSheetActive, onDismiss: nil) {
                     content()
                 }
         }

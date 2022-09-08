@@ -1,4 +1,4 @@
-public enum PresentationStyle {
+public enum PresentationStyle: Equatable {
     case fullScreenCover
     case sheet
 }
