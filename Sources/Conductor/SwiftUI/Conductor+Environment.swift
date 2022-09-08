@@ -20,7 +20,8 @@ struct PresentationEntryEnvironmentKey: EnvironmentKey {
         id: "?",
         type: "DefaultValue",
         value: "default",
-        style: .fullScreenCover
+        style: .fullScreenCover,
+        callback: nil
     )
 }
 

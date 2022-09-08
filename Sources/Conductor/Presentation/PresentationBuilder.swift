@@ -8,7 +8,17 @@ public struct PresentationBuilder {
     }
     
     public mutating func present<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) {
-        steps.append(.present(entry(value, style: style)))
+        let id = idGenerator.nextId()
+        let type = toTypeIdentifier(Value.self)
+        let entry = PresentationEntry(id: id, type: type, value: value, style: style, callback: nil)
+        steps.append(.present(entry))
+    }
+    
+    public mutating func present<Value, Output>(_ value: Value, style: PresentationStyle = .fullScreenCover, callback: @escaping (Output) -> Void) {
+        let id = idGenerator.nextId()
+        let type = toTypeIdentifier(Value.self)
+        let entry = PresentationEntry(id: id, type: type, value: value, style: style, callback: { callback($0 as! Output) })
+        steps.append(.present(entry))
     }
     
     public mutating func dismiss() {
@@ -17,11 +27,5 @@ public struct PresentationBuilder {
     
     public mutating func invoke(_ block: @escaping () -> Void) {
         steps.append(.invoke(block))
-    }
-    
-    private func entry<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) -> PresentationEntry {
-        let id = idGenerator.nextId()
-        let type = toTypeIdentifier(Value.self)
-        return PresentationEntry(id: id, type: type, value: value, style: style)
     }
 }
