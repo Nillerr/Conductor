@@ -9,7 +9,7 @@ public class NavigationRouter: ObservableObject {
         }
     }
     
-    private let idGenerator: NavigationIdGenerator
+    private let idGenerator: IdGenerator
     private let configuration: Configuration
     
     @Published public internal(set) var path = NavigationPath()
@@ -17,7 +17,7 @@ public class NavigationRouter: ObservableObject {
     private var workQueue: [DispatchWorkItem] = []
     
     public init(
-        idGenerator: NavigationIdGenerator = IncrementingNavigationIdGenerator(),
+        idGenerator: IdGenerator = IncrementingNavigationIdGenerator(),
         configuration: Configuration = Configuration()
     ) {
         self.idGenerator = idGenerator

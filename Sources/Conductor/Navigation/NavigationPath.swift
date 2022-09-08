@@ -1,5 +1,19 @@
-public struct NavigationPath: CustomStringConvertible {
-    var entries: [NavigationEntry]
+public typealias NavigationPath = EntryPath<NavigationEntry>
+public typealias PresentationPath = EntryPath<PresentationEntry>
+
+public protocol NavigableEntry: CustomStringConvertible {
+    var id: String { get }
+    var type: String { get }
+}
+
+extension NavigableEntry {
+    public var description: String {
+        return "\(type)<\(id)>"
+    }
+}
+
+public struct EntryPath<Entry>: CustomStringConvertible where Entry : NavigableEntry {
+    var entries: [Entry]
     
     var isEmpty: Bool { entries.isEmpty }
     
@@ -12,7 +26,7 @@ public struct NavigationPath: CustomStringConvertible {
         self.entries = []
     }
     
-    init<S>(_ entries: S) where S : Sequence, S.Element == NavigationEntry {
+    init<S>(_ entries: S) where S : Sequence, S.Element == Entry {
         self.entries = Array(entries)
     }
     
@@ -25,7 +39,7 @@ public struct NavigationPath: CustomStringConvertible {
     }
     
     @discardableResult
-    mutating func popFirst() -> NavigationEntry? {
+    mutating func popFirst() -> Entry? {
         if let first = entries.first {
             entries.removeFirst()
             return first
@@ -35,12 +49,12 @@ public struct NavigationPath: CustomStringConvertible {
     }
     
     @discardableResult
-    mutating func popLast() -> NavigationEntry? {
+    mutating func popLast() -> Entry? {
         return entries.popLast()
     }
     
     @discardableResult
-    mutating func popLast(id: String) -> NavigationEntry? {
+    mutating func popLast(id: String) -> Entry? {
         if let last = entries.last, last.id == id {
             entries.removeLast()
             return last
@@ -53,7 +67,7 @@ public struct NavigationPath: CustomStringConvertible {
         entries.removeLast(k)
     }
     
-    mutating func append(_ entry: NavigationEntry) {
+    mutating func append(_ entry: Entry) {
         entries.append(entry)
     }
     

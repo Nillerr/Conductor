@@ -1,8 +1,8 @@
-public protocol NavigationIdGenerator {
+public protocol IdGenerator {
     func nextId() -> String
 }
 
-public class IncrementingNavigationIdGenerator : NavigationIdGenerator {
+public class IncrementingNavigationIdGenerator : IdGenerator {
     private var next: Int
     
     public init(start: Int = 1) {

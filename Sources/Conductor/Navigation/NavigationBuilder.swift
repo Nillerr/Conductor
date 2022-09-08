@@ -1,9 +1,9 @@
 public struct NavigationBuilder {
-    private let idGenerator: NavigationIdGenerator
+    private let idGenerator: IdGenerator
     
     private(set) var steps: [NavigationStep] = []
     
-    public init(idGenerator: NavigationIdGenerator) {
+    public init(idGenerator: IdGenerator) {
         self.idGenerator = idGenerator
     }
     

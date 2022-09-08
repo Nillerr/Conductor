@@ -101,8 +101,10 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
                 !path.isEmpty
             } set: { newValue in
                 let routerPath = router.path
-                if let child = path.entries.first, !newValue, let popped = router.path.popLast(id: child.id) {
-                    Logging.log(.stack, "<Entry> {POP}", "\tentry: \(entry)", "\trouter: \(routerPath)", "\tpath: \(path)", "\tpopped: \(popped)")
+                if let child = path.entries.first, !newValue {
+                    if let popped = router.path.popLast(id: child.id) {
+                        Logging.log(.stack, "<Entry> {POP}", "\tentry: \(entry)", "\trouter: \(routerPath)", "\tpath: \(path)", "\tpopped: \(popped)")
+                    }
                 }
             }
         }

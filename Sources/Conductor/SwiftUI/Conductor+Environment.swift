@@ -15,6 +15,22 @@ struct NavigationRouterEnvironmentKey: EnvironmentKey {
     )
 }
 
+struct PresentationEntryEnvironmentKey: EnvironmentKey {
+    static var defaultValue = PresentationEntry(
+        id: "?",
+        type: "DefaultValue",
+        value: AnyHashable("default"),
+        style: .fullScreenCover
+    )
+}
+
+struct PresentationRouterEnvironmentKey: EnvironmentKey {
+    static var defaultValue = PresentationRouter(
+        idGenerator: IncrementingNavigationIdGenerator(),
+        configuration: .init()
+    )
+}
+
 extension EnvironmentValues {
     public var navigationEntry: NavigationEntry {
         get { self[NavigationEntryEnvironmentKey.self] }
@@ -24,5 +40,15 @@ extension EnvironmentValues {
     public var navigationRouter: NavigationRouter {
         get { self[NavigationRouterEnvironmentKey.self] }
         set { self[NavigationRouterEnvironmentKey.self] = newValue }
+    }
+    
+    public var presentationEntry: PresentationEntry {
+        get { self[PresentationEntryEnvironmentKey.self] }
+        set { self[PresentationEntryEnvironmentKey.self] = newValue }
+    }
+    
+    public var presentationRouter: PresentationRouter {
+        get { self[PresentationRouterEnvironmentKey.self] }
+        set { self[PresentationRouterEnvironmentKey.self] = newValue }
     }
 }
