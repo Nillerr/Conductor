@@ -62,7 +62,12 @@ public struct PresentationStack<Root: View, Routes: View>: View {
             root
                 .environment(\.presentationRouter, router)
             
-            Link(router: router, activePresentationStyle: activeLinkPresentationStyle, routes: routes, path: router.path)
+            Link(
+                router: router,
+                activePresentationStyle: activeLinkPresentationStyle,
+                routes: routes,
+                path: Binding { router.path } set: { _ in }
+            )
         }
     }
     
@@ -73,12 +78,12 @@ public struct PresentationStack<Root: View, Routes: View>: View {
         
         public let routes: Routes
         
-        public let path: PresentationPath
+        @Binding public var path: PresentationPath
         
         public var body: some View {
             PresentationLink(presentationStyle: $activePresentationStyle) {
-                var descendants = path
-                if let entry = descendants.popFirst() {
+                if let entry = path.entries.first {
+                    let descendants = Binding { PresentationPath(path.dropFirst()) } set: { _ in }
                     Entry(router: router, routes: routes, entry: entry, path: descendants)
                 } else {
                     Text("Unexpected state: No descendants of navigation")
@@ -140,7 +145,7 @@ public struct PresentationStack<Root: View, Routes: View>: View {
         
         public let entry: PresentationEntry
         
-        public let path: PresentationPath
+        @Binding public var path: PresentationPath
         
         public var activeLinkPresentationStyle: Binding<PresentationStyle?> {
             Binding {
@@ -160,7 +165,7 @@ public struct PresentationStack<Root: View, Routes: View>: View {
                 .environment(\.presentationEntry, entry)
                 .environment(\.presentationRouter, router)
             
-            Link(router: router, activePresentationStyle: activeLinkPresentationStyle, routes: routes, path: path)
+            Link(router: router, activePresentationStyle: activeLinkPresentationStyle, routes: routes, path: $path)
         }
     }
 }
