@@ -37,8 +37,8 @@ public struct NavigationBuilder {
         steps.append(.goToLast(entry(value)))
     }
     
-    public mutating func invoke(_ block: @escaping () -> Void) {
-        steps.append(.invoke(block))
+    public mutating func invoke(immediate: Bool = false, _ block: @escaping () -> Void) {
+        steps.append(.invoke(immediate, block))
     }
     
     private func entry<Value>(_ value: Value) -> NavigationEntry {

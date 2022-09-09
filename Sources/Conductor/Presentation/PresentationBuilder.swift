@@ -18,7 +18,7 @@ public struct PresentationBuilder {
         steps.append(.dismiss)
     }
     
-    public mutating func invoke(_ block: @escaping () -> Void) {
-        steps.append(.invoke(block))
+    public mutating func invoke(immediate: Bool = false, _ block: @escaping () -> Void) {
+        steps.append(.invoke(immediate, block))
     }
 }

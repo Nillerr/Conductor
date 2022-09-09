@@ -67,8 +67,8 @@ public class PresentationRouter: ObservableObject {
             return WorkHandle { [weak self] in self?.dismiss() }
         case .present(let entry):
             return WorkHandle { [weak self] in self?.present(entry) }
-        case .invoke(let block):
-            return WorkHandle(block: block)
+        case .invoke(let immediate, let block):
+            return WorkHandle(immediate: immediate, block: block)
         }
     }
     
