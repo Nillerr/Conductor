@@ -66,7 +66,7 @@ public struct PresentationStack<Root: View, Routes: View>: View {
                 router: router,
                 activePresentationStyle: activeLinkPresentationStyle,
                 routes: routes,
-                path: Binding { router.path } set: { _ in }
+                path: readOnlyBinding { router.path }
             )
         }
     }
@@ -82,8 +82,9 @@ public struct PresentationStack<Root: View, Routes: View>: View {
         
         public var body: some View {
             PresentationLink(presentationStyle: $activePresentationStyle) {
-                if let entry = path.entries.first {
-                    let descendants = Binding { PresentationPath(path.dropFirst()) } set: { _ in }
+                if let _ = path.first {
+                    let entry = readOnlyBinding { path.first! }
+                    let descendants = readOnlyBinding { path.dropFirst() }
                     Entry(router: router, routes: routes, entry: entry, path: descendants)
                 } else {
                     Text("Unexpected state: No descendants of navigation")
@@ -143,7 +144,7 @@ public struct PresentationStack<Root: View, Routes: View>: View {
         
         public let routes: Routes
         
-        public let entry: PresentationEntry
+        @Binding public var entry: PresentationEntry
         
         @Binding public var path: PresentationPath
         

@@ -29,6 +29,14 @@ public struct EntryPath<Entry>: CustomStringConvertible, Sequence where Entry : 
         return entries.lastIndex(where: { it in it.type == type })
     }
     
+    var first: Entry? {
+        return entries.first
+    }
+    
+    func dropFirst() -> EntryPath<Entry> {
+        return EntryPath(entries.dropFirst())
+    }
+    
     @discardableResult
     mutating func popFirst() -> Entry? {
         if let first = entries.first {

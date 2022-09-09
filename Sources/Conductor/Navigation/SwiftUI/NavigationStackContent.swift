@@ -61,7 +61,12 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
             root
                 .environment(\.navigationRouter, router)
             
-            Link(router: router, isActive: isLinkActive, routes: routes, path: router.path)
+            Link(
+                router: router,
+                isActive: isLinkActive,
+                routes: routes,
+                path: readOnlyBinding { router.path }
+            )
         }
     }
     
@@ -72,12 +77,13 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
         
         public let routes: Routes
         
-        public let path: NavigationPath
+        @Binding public var path: NavigationPath
         
         public var body: some View {
             NavigationLink(isActive: $isActive) {
-                var descendants = path
-                if let entry = descendants.popFirst() {
+                if let _ = path.first {
+                    let entry = readOnlyBinding { path.first! }
+                    let descendants = readOnlyBinding { path.dropFirst() }
                     Entry(router: router, routes: routes, entry: entry, path: descendants)
                 } else {
                     Text("Unexpected state: No descendants of navigation")
@@ -92,9 +98,9 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
         
         public let routes: Routes
         
-        public let entry: NavigationEntry
+        @Binding public var entry: NavigationEntry
         
-        public let path: NavigationPath
+        @Binding public var path: NavigationPath
         
         public var isLinkActive: Binding<Bool> {
             Binding {
@@ -114,7 +120,7 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
                 .environment(\.navigationEntry, entry)
                 .environment(\.navigationRouter, router)
             
-            Link(router: router, isActive: isLinkActive, routes: routes, path: path)
+            Link(router: router, isActive: isLinkActive, routes: routes, path: $path)
         }
     }
 }
