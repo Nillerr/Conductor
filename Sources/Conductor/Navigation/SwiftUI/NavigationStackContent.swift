@@ -90,6 +90,10 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
                 }
             } label: { EmptyView() }
                 .isDetailLink(false)
+                .onDisappear {
+                    print("[Link] onDisappear")
+                    isActive = false
+                }
         }
     }
     
