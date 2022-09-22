@@ -1,11 +1,11 @@
 import Foundation
 
 public struct WorkHandle {
-    public let work: DispatchWorkItem
+    public let work: () -> Void
     public let immediate: Bool
     
-    public init(immediate: Bool = false, block: @escaping () -> Void) {
-        self.work = DispatchWorkItem(block: block)
+    public init(immediate: Bool = false, work: @escaping () -> Void) {
+        self.work = work
         self.immediate = immediate
     }
 }

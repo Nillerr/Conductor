@@ -52,7 +52,7 @@ public class PresentationRouter: ObservableObject {
     
     private func performNextWork() {
         guard let workHandle = workQueue.first else { return }
-        workHandle.work.perform()
+        workHandle.work()
         
         let delay = workHandle.immediate ? .milliseconds(0) : configuration.operationDelay
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
@@ -68,7 +68,7 @@ public class PresentationRouter: ObservableObject {
         case .present(let entry):
             return WorkHandle { [weak self] in self?.present(entry) }
         case .invoke(let immediate, let block):
-            return WorkHandle(immediate: immediate, block: block)
+            return WorkHandle(immediate: immediate, work: block)
         }
     }
     
