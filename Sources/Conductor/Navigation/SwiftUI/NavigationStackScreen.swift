@@ -5,12 +5,12 @@ public struct NavigationStackScreen<Content: View>: View {
     @Environment(\.navigationRouter) public var navigation: NavigationRouter
     
     public let type: TypeId
-    public let onDismiss: () -> Void
+    public let onDismiss: (Any) -> Void
     public let content: (Any) -> Content
     
-    public init<Value>(_ type: Value.Type, onDismiss: @escaping () -> Void = {}, @ViewBuilder content: @escaping (Value) -> Content) {
+    public init<Value>(_ type: Value.Type, onDismiss: @escaping (Value) -> Void = { _ in }, @ViewBuilder content: @escaping (Value) -> Content) {
         self.type = toTypeIdentifier(type)
-        self.onDismiss = onDismiss
+        self.onDismiss = { value in onDismiss(value as! Value) }
         self.content = { value in content(value as! Value) }
     }
     
@@ -19,7 +19,7 @@ public struct NavigationStackScreen<Content: View>: View {
             content(entry.value)
                 .onDisappear {
                     if !navigation.path.contains(where: { e in e.id == entry.id && e.type == entry.type }) {
-                        onDismiss()
+                        onDismiss(entry.value)
                     }
                 }
         } else {
