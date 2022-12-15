@@ -14,6 +14,13 @@ public struct PresentationBuilder {
         steps.append(.present(entry))
     }
     
+    public mutating func replace<Value>(_ value: Value) {
+        let id = idGenerator.nextId()
+        let type = toTypeIdentifier(Value.self)
+        let entry = PresentationEntry(id: id, type: type, value: value, style: .fullScreenCover)
+        steps.append(.replace(entry))
+    }
+    
     public mutating func dismiss() {
         steps.append(.dismiss)
     }

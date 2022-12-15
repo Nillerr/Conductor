@@ -67,6 +67,8 @@ public class PresentationRouter: ObservableObject {
             return WorkHandle { [weak self] in self?.dismiss() }
         case .present(let entry):
             return WorkHandle { [weak self] in self?.present(entry) }
+        case .replace(let entry):
+            return WorkHandle { [weak self] in self?.replace(entry) }
         case .invoke(let immediate, let block):
             return WorkHandle(immediate: immediate, work: block)
         }
@@ -80,5 +82,17 @@ public class PresentationRouter: ObservableObject {
     private func present(_ entry: PresentationEntry) {
         Logging.log(.stack, "<PresentationRouter> {PRESENT}", "\tentry: \(entry)")
         path.append(entry)
+    }
+    
+    private func replace(_ entry: PresentationEntry) {
+        Logging.log(.stack, "<PresentationRouter> {REPLACE}", "\tentry: \(entry)")
+        
+        var copy = path
+        if let last = copy.popLast() {
+            let clone = PresentationEntry(id: last.id, type: entry.type, value: entry.value, style: last.style)
+            copy.append(clone)
+
+            path = copy
+        }
     }
 }
