@@ -16,7 +16,7 @@ public class NavigationRouter: ObservableObject {
     
     @Published public internal(set) var path = NavigationPath()
     
-    private var workQueue: [WorkHandle] = []
+    private var workQueue: [TimedWorkFactory] = []
     
     public init(
         idGenerator: IdGenerator = IncrementingIdGenerator(),
@@ -27,19 +27,24 @@ public class NavigationRouter: ObservableObject {
     }
     
     public func navigate(_ builder: @escaping (inout NavigationBuilder) -> Void) {
-        let work = WorkHandle(immediate: true) { [weak self] in self?.performNavigate(builder) }
-        enqueueWork([work])
+        let workFactory = TimedWorkFactory { [weak self] in
+            TimedWork(duration: .seconds(0)) {
+                self?.performNavigate(builder)
+            }
+        }
+        
+        enqueueWork([workFactory])
     }
     
     private func performNavigate(_ builder: @escaping (inout NavigationBuilder) -> Void) {
         var navBuilder = NavigationBuilder(idGenerator: idGenerator)
         builder(&navBuilder)
         
-        let work = navBuilder.steps.map(createWork(for:))
-        enqueueWork(work)
+        let workFactories = navBuilder.steps.map(createWork(for:))
+        enqueueWork(workFactories)
     }
     
-    private func enqueueWork(_ work: [WorkHandle]) {
+    private func enqueueWork(_ work: [TimedWorkFactory]) {
         let currentWork = workQueue
         workQueue.append(contentsOf: work)
         
@@ -51,34 +56,45 @@ public class NavigationRouter: ObservableObject {
     }
     
     private func performNextWork() {
-        guard let workHandle = workQueue.first else { return }
-        workHandle.work()
+        guard let workFactory = workQueue.first else { return }
         
-        let delay = workHandle.immediate ? .milliseconds(0) : configuration.operationDelay
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+        let work = workFactory.work()
+        work.perform()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + work.duration) { [weak self] in
             self?.workQueue.removeFirst()
             self?.performNextWork()
         }
     }
     
-    private func createWork(for step: NavigationStep) -> WorkHandle {
+    private func createWork(for step: NavigationStep) -> TimedWorkFactory {
         switch step {
         case .popToRoot:
-            return WorkHandle { [weak self] in self?.popToRoot() }
+            return createStandardWork { [weak self] in self?.popToRoot() }
         case .pop(let count):
-            return WorkHandle { [weak self] in self?.pop(count) }
+            return createStandardWork { [weak self] in self?.pop(count) }
         case .popToFirst(let type):
-            return WorkHandle { [weak self] in self?.popToFirst(type) }
+            return createStandardWork { [weak self] in self?.popToFirst(type) }
         case .popToLast(let type):
-            return WorkHandle { [weak self] in self?.popToLast(type) }
+            return createStandardWork { [weak self] in self?.popToLast(type) }
         case .push(let entry):
-            return WorkHandle { [weak self] in self?.push(entry) }
+            return createStandardWork { [weak self] in self?.push(entry) }
         case .goToFirst(let entry):
-            return WorkHandle { [weak self] in self?.goToFirst(entry) }
+            return createStandardWork { [weak self] in self?.goToFirst(entry) }
         case .goToLast(let entry):
-            return WorkHandle { [weak self] in self?.goToLast(entry) }
+            return createStandardWork { [weak self] in self?.goToLast(entry) }
         case .invoke(let immediate, let block):
-            return WorkHandle(immediate: immediate, work: block)
+            let duration = immediate ? .seconds(0) : configuration.operationDelay
+            return TimedWorkFactory {
+                TimedWork(duration: duration, perform: block)
+            }
+        }
+    }
+    
+    private func createStandardWork(block: @escaping () -> Void) -> TimedWorkFactory {
+        let duration = configuration.operationDelay
+        return TimedWorkFactory {
+            TimedWork(duration: duration, perform: block)
         }
     }
     

@@ -3,6 +3,60 @@ import Foundation
 
 public typealias PresentationPath = EntryPath<PresentationEntry>
 
+extension Collection {
+    internal func forEach(delay: DispatchTimeInterval, block: @escaping (Element) -> Void) {
+        enumerated().forEach { offset, element in
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay * offset) {
+                block(element)
+            }
+        }
+    }
+}
+
+internal func *(lhs: DispatchTimeInterval, rhs: Int) -> DispatchTimeInterval {
+    switch lhs {
+    case .never:
+        return .never
+    case .seconds(let seconds):
+        return .seconds(seconds * rhs)
+    case .microseconds(let microseconds):
+        return .microseconds(microseconds * rhs)
+    case .milliseconds(let milliseconds):
+        return .milliseconds(milliseconds * rhs)
+    case .nanoseconds(let nanoseconds):
+        return .nanoseconds(nanoseconds * rhs)
+    @unknown default:
+        return .never
+    }
+}
+
+extension DispatchTimeInterval {
+    var totalNanoSeconds: Int? {
+        switch self {
+        case .never:
+            return nil
+        case .seconds(let seconds):
+            return seconds * 1_000_000_000
+        case .milliseconds(let milliseconds):
+            return milliseconds * 1_000_000
+        case .microseconds(let microseconds):
+            return microseconds * 1_000
+        case .nanoseconds(let nanoseconds):
+            return nanoseconds
+        @unknown default:
+            return nil
+        }
+    }
+}
+
+internal func +(lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInterval {
+    if let lhs = lhs.totalNanoSeconds, let rhs = rhs.totalNanoSeconds {
+        return .nanoseconds(lhs + rhs)
+    } else {
+        return .never
+    }
+}
+
 public class PresentationRouter: ObservableObject {
     public struct Configuration {
         public var operationDelay: DispatchTimeInterval = .milliseconds(650)
@@ -16,7 +70,7 @@ public class PresentationRouter: ObservableObject {
     
     @Published public internal(set) var path = PresentationPath()
     
-    private var workQueue: [WorkHandle] = []
+    private var workQueue: [TimedWorkFactory] = []
     
     public init(
         idGenerator: IdGenerator = IncrementingIdGenerator(),
@@ -27,8 +81,13 @@ public class PresentationRouter: ObservableObject {
     }
     
     public func navigate(_ builder: @escaping (inout PresentationBuilder) -> Void) {
-        let work = WorkHandle(immediate: true) { [weak self] in self?.performNavigate(builder) }
-        enqueueWork([work])
+        let workFactory = TimedWorkFactory { [weak self] in
+            TimedWork(duration: .seconds(0)) {
+                self?.performNavigate(builder)
+            }
+        }
+        
+        enqueueWork([workFactory])
     }
     
     private func performNavigate(_ builder: @escaping (inout PresentationBuilder) -> Void) {
@@ -39,7 +98,7 @@ public class PresentationRouter: ObservableObject {
         enqueueWork(work)
     }
     
-    private func enqueueWork(_ work: [WorkHandle]) {
+    private func enqueueWork(_ work: [TimedWorkFactory]) {
         let currentWork = workQueue
         workQueue.append(contentsOf: work)
         
@@ -51,26 +110,91 @@ public class PresentationRouter: ObservableObject {
     }
     
     private func performNextWork() {
-        guard let workHandle = workQueue.first else { return }
-        workHandle.work()
+        guard let workFactory = workQueue.first else { return }
         
-        let delay = workHandle.immediate ? .milliseconds(0) : configuration.operationDelay
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+        let work = workFactory.work()
+        work.perform()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + work.duration) { [weak self] in
             self?.workQueue.removeFirst()
             self?.performNextWork()
         }
     }
     
-    private func createWork(for step: PresentationStep) -> WorkHandle {
+    private func createWork(for step: PresentationStep) -> TimedWorkFactory {
         switch step {
         case .dismiss:
-            return WorkHandle { [weak self] in self?.dismiss() }
+            return createStandardWork { [weak self] in self?.dismiss() }
         case .present(let entry):
-            return WorkHandle { [weak self] in self?.present(entry) }
+            return createStandardWork { [weak self] in self?.present(entry) }
+        case .go(let entry):
+            return createGoWork(for: entry)
         case .replace(let entry):
-            return WorkHandle { [weak self] in self?.replace(entry) }
+            return createStandardWork { [weak self] in self?.replace(entry) }
         case .invoke(let immediate, let block):
-            return WorkHandle(immediate: immediate, work: block)
+            let duration = immediate ? .seconds(0) : configuration.operationDelay
+            return TimedWorkFactory {
+                TimedWork(duration: duration, perform: block)
+            }
+        }
+    }
+    
+    private func createStandardWork(perform: @escaping () -> Void) -> TimedWorkFactory {
+        let duration = configuration.operationDelay
+        
+        let workFactory = TimedWorkFactory {
+            TimedWork(duration: duration, perform: perform)
+        }
+        
+        return workFactory
+    }
+    
+    private func createGoWork(for entry: PresentationEntry) -> TimedWorkFactory {
+        return TimedWorkFactory { [weak self] in
+            guard let `self` = self else { return .none }
+            
+            let operationDelay = self.configuration.operationDelay
+            
+            var operations: [TimedWork] = []
+            
+            if let _ = self.path.lastIndex(type: entry.type) {
+                self.path.reversed().enumerated().forEach { offset, pathEntry in
+                    if pathEntry.type == entry.type {
+                        let work = TimedWork(duration: .milliseconds(0), perform: { [weak self] in
+                            self?.replace(entry)
+                        })
+                        
+                        return operations.append(work)
+                    } else {
+                        let work = TimedWork(duration: operationDelay * offset) { [weak self] in
+                            self?.dismiss()
+                        }
+                        
+                        operations.append(work)
+                    }
+                }
+            } else {
+                let work = TimedWork(duration: operationDelay) { [weak self] in
+                    self?.present(entry)
+                }
+                
+                operations.append(work)
+            }
+            
+            let totalDuration = operations.reduce(.seconds(0)) { delay, work in
+                delay + work.duration
+            }
+            
+            return TimedWork(duration: totalDuration) {
+                operations.enumerated().forEach { offset, work in
+                    let delay = operations.prefix(upTo: offset)
+                        .reduce(.seconds(0)) { delay, work in delay + work.duration }
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                        work.perform()
+                    }
+                }
+            }
         }
     }
     
