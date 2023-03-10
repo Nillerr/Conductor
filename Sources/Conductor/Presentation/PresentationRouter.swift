@@ -200,7 +200,7 @@ public class PresentationRouter: ObservableObject {
     
     private func dismiss() {
         Logging.log(.stack, "<PresentationRouter> {DISMISS}")
-        path.removeLast()
+        path.popLast()
     }
     
     private func present(_ entry: PresentationEntry) {

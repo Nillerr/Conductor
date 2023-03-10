@@ -105,7 +105,10 @@ public class NavigationRouter: ObservableObject {
     
     private func pop(_ count: Int) {
         Logging.log(.stack, "<StackRouter> {POP}", "\tcount: \(count)")
-        path.removeLast(count)
+        
+        for _ in 0..<count {
+            path.popLast()
+        }
     }
     
     private func popToFirst(_ type: String) {
