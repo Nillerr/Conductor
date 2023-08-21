@@ -81,8 +81,8 @@ public struct NavigationStackContent<Root: View, Routes: View>: View {
         
         public var body: some View {
             NavigationLink(isActive: $isActive) {
-                if let _ = path.first {
-                    let entry = readOnlyBinding { path.first! }
+                if let first = path.first {
+                    let entry = readOnlyBinding { first }
                     let descendants = readOnlyBinding { path.dropFirst() }
                     Entry(router: router, routes: routes, entry: entry, path: descendants)
                 } else {
