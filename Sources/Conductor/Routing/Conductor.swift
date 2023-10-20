@@ -4,6 +4,10 @@ private func printNotImplemented() {
     print("[Conductor] A router must be injected using `.conductor(router)`, in order to use `@Environment(\\.conductor)`.")
 }
 
+private func printRouterReleased() {
+    print("[Conductor] The router associated with this Conductor was released. Make sure the router is stored in a `@State` property, `ViewModel` or is otherwise retained elsewhere.")
+}
+
 public struct Conductor {
     private let _push: (Any, TypeId) -> Void
     private let _pop: () -> Void
@@ -11,19 +15,25 @@ public struct Conductor {
     
     public init(router: PresentationRouter) {
         self._push = { [weak router] value, type in
-            router?.navigate { modal in
+            guard let router else { return printRouterReleased() }
+            
+            router.navigate { modal in
                 modal.present(value, type: type)
             }
         }
         
         self._pop = { [weak router] in
-            router?.navigate { modal in
+            guard let router else { return printRouterReleased() }
+            
+            router.navigate { modal in
                 modal.dismiss()
             }
         }
         
         self._popToRoot = { [weak router] in
-            router?.navigate { modal in
+            guard let router else { return printRouterReleased() }
+            
+            router.navigate { [weak router] modal in
                 router?.path.forEach { _ in modal.dismiss() }
             }
         }
