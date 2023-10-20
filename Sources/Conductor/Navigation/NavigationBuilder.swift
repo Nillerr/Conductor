@@ -8,7 +8,14 @@ public struct NavigationBuilder {
     }
     
     public mutating func push<Value>(_ value: Value) {
-        steps.append(.push(entry(value)))
+        let type = toTypeIdentifier(Value.self)
+        push(value, type: type)
+    }
+    
+    public mutating func push(_ value: Any, type: TypeId) {
+        let id = idGenerator.nextId()
+        let entry = NavigationEntry(id: id, type: type, value: value)
+        steps.append(.push(entry))
     }
     
     public mutating func pop(_ count: Int = 1) {

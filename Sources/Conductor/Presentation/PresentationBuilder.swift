@@ -8,8 +8,12 @@ public struct PresentationBuilder {
     }
     
     public mutating func present<Value>(_ value: Value, style: PresentationStyle = .fullScreenCover) {
-        let id = idGenerator.nextId()
         let type = toTypeIdentifier(Value.self)
+        present(value, type: type, style: style)
+    }
+    
+    public mutating func present(_ value: Any, type: TypeId, style: PresentationStyle = .fullScreenCover) {
+        let id = idGenerator.nextId()
         let entry = PresentationEntry(id: id, type: type, value: value, style: style)
         steps.append(.present(entry))
     }
