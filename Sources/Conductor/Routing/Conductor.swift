@@ -69,3 +69,13 @@ extension EnvironmentValues {
         set { self[ConductorEnvironmentKey.self] = newValue }
     }
 }
+
+extension View {
+    public func conductor(_ router: PresentationRouter) -> some View {
+        environment(\.conductor, Conductor(router: router))
+    }
+    
+    public func conductor(_ router: NavigationRouter) -> some View {
+        environment(\.conductor, Conductor(router: router))
+    }
+}
