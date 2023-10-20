@@ -1,48 +1,58 @@
 import SwiftUI
 
+private func printNotImplemented() {
+    print("[Conductor] A router must be injected using `.conductor(router)`, in order to use `@Environment(\\.conductor)`.")
+}
+
 public struct Conductor {
     private let _push: (Any, TypeId) -> Void
     private let _pop: () -> Void
     private let _popToRoot: () -> Void
     
     public init(router: PresentationRouter) {
-        self._push = { value, type in
-            router.navigate { modal in
+        self._push = { [weak router] value, type in
+            router?.navigate { modal in
                 modal.present(value, type: type)
             }
         }
         
-        self._pop = {
-            router.navigate { modal in
+        self._pop = { [weak router] in
+            router?.navigate { modal in
                 modal.dismiss()
             }
         }
         
-        self._popToRoot = {
-            router.navigate { modal in
-                router.path.forEach { _ in modal.dismiss() }
+        self._popToRoot = { [weak router] in
+            router?.navigate { modal in
+                router?.path.forEach { _ in modal.dismiss() }
             }
         }
     }
     
     public init(router: NavigationRouter) {
-        self._push = { value, type in
-            router.navigate { stack in
+        self._push = { [weak router] value, type in
+            router?.navigate { stack in
                 stack.push(value, type: type)
             }
         }
         
-        self._pop = {
-            router.navigate { stack in
+        self._pop = { [weak router] in
+            router?.navigate { stack in
                 stack.pop()
             }
         }
         
-        self._popToRoot = {
-            router.navigate { stack in
+        self._popToRoot = { [weak router] in
+            router?.navigate { stack in
                 stack.popToRoot()
             }
         }
+    }
+    
+    internal init() {
+        self._push = { _, _ in printNotImplemented() }
+        self._pop = { printNotImplemented() }
+        self._popToRoot = { printNotImplemented() }
     }
     
     public func push<Value>(_ view: Value) {
@@ -60,7 +70,7 @@ public struct Conductor {
 }
 
 public struct ConductorEnvironmentKey : EnvironmentKey {
-    public static var defaultValue = Conductor(router: PresentationRouter())
+    public static var defaultValue = Conductor()
 }
 
 extension EnvironmentValues {
