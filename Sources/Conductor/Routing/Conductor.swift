@@ -13,7 +13,11 @@ public struct Conductor {
     private let _pop: () -> Void
     private let _popToRoot: () -> Void
     
+    public var isModal: Bool
+    
     public init(router: PresentationRouter) {
+        self.isModal = true
+        
         self._push = { [weak router] value, type in
             guard let router else { return printRouterReleased() }
             
@@ -40,6 +44,8 @@ public struct Conductor {
     }
     
     public init(router: NavigationRouter) {
+        self.isModal = false
+        
         self._push = { [weak router] value, type in
             router?.navigate { stack in
                 stack.push(value, type: type)
@@ -60,6 +66,8 @@ public struct Conductor {
     }
     
     internal init() {
+        self.isModal = false
+        
         self._push = { _, _ in printNotImplemented() }
         self._pop = { printNotImplemented() }
         self._popToRoot = { printNotImplemented() }
