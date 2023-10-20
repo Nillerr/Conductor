@@ -99,6 +99,10 @@ extension EnvironmentValues {
 }
 
 extension View {
+    public func conductor(_ conductor: Conductor) -> some View {
+        environment(\.conductor, conductor)
+    }
+    
     public func conductor(_ router: PresentationRouter) -> some View {
         environment(\.conductor, Conductor(router: router))
     }
