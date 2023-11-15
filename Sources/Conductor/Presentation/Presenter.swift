@@ -115,7 +115,7 @@ public class ObservablePresenter: ObservableObject {
     
     private func scheduleWork() {
         guard let work = queue.first else {
-            isSettled = false
+            isSettled = true
             return
         }
         
