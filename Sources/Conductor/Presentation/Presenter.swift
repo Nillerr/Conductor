@@ -96,14 +96,18 @@ public class ObservablePresenter: ObservableObject {
     
     @MainActor
     private func _dismissWork(continuation: (@Sendable () async -> Void)? = nil) async {
-        isPresented = false
-        
-        do {
-            try await Task.sleep(milliseconds: 600)
-            presented = nil
+        if isPresented {
+            isPresented = false
+            
+            do {
+                try await Task.sleep(milliseconds: 600)
+                presented = nil
+                await continuation?()
+            } catch {
+                // Nothing
+            }
+        } else {
             await continuation?()
-        } catch {
-            // Nothing
         }
     }
     
