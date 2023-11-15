@@ -150,7 +150,7 @@ public struct PresentedView<Value, Content: View>: View {
     
     @ViewBuilder let content: (Value) -> Content
     
-    public init(@ViewBuilder content: @escaping (Value) -> Content) {
+    public init(_ type: Value.Type, @ViewBuilder content: @escaping (Value) -> Content) {
         self.content = content
     }
     
