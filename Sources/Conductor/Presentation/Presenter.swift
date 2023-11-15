@@ -68,15 +68,20 @@ public class ObservablePresenter: ObservableObject {
             
             do {
                 try await Task.sleep(milliseconds: 600)
+                
+                presented = value
+                isPresented = true
+                
+                await continuation?()
             } catch {
                 // Nothing
             }
+        } else {
+            presented = value
+            isPresented = true
+            
+            await continuation?()
         }
-        
-        presented = value
-        isPresented = true
-        
-        await continuation?()
     }
     
     public func dismiss(continuation: (@Sendable () async -> Void)? = nil) {
