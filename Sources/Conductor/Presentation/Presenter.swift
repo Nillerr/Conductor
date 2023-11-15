@@ -145,12 +145,16 @@ extension View {
     }
 }
 
-struct PresentedView<Value, Content: View>: View {
+public struct PresentedView<Value, Content: View>: View {
     @Environment(\.presentedView) private var presentedView: Any?
     
     @ViewBuilder let content: (Value) -> Content
     
-    var body: some View {
+    init(@ViewBuilder content: @escaping (Value) -> Content) {
+        self.content = content
+    }
+    
+    public var body: some View {
         if let presentedView, let value = presentedView as? Value {
             content(value)
         } else {
