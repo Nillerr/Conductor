@@ -155,8 +155,12 @@ public struct PresentedView<Value, Content: View>: View {
     }
     
     public var body: some View {
-        if let presentedView, let value = presentedView as? Value {
-            content(value)
+        if let presentedView {
+            if let value = presentedView as? Value {
+                content(value)
+            } else {
+                EmptyView()
+            }
         } else {
             Text("PresentedView: Missing Value")
         }
